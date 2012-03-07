@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="62">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <itemPath>src/bt_control.h</itemPath>
+      <itemPath>include/btstack/btstack.h</itemPath>
+      <itemPath>src/btstack_memory.h</itemPath>
+      <itemPath>config.h</itemPath>
+      <itemPath>src/debug.h</itemPath>
+      <itemPath>include/btstack/hal_cpu.h</itemPath>
+      <itemPath>include/btstack/hal_tick.h</itemPath>
+      <itemPath>src/hci.h</itemPath>
+      <itemPath>include/btstack/hci_cmds.h</itemPath>
+      <itemPath>src/hci_dump.h</itemPath>
+      <itemPath>src/hci_transport.h</itemPath>
+      <itemPath>src/l2cap.h</itemPath>
+      <itemPath>src/l2cap_signaling.h</itemPath>
+      <itemPath>include/btstack/linked_list.h</itemPath>
+      <itemPath>include/btstack/memory_pool.h</itemPath>
+      <itemPath>src/remote_device_db.h</itemPath>
+      <itemPath>src/rfcomm.h</itemPath>
+      <itemPath>include/btstack/run_loop.h</itemPath>
+      <itemPath>src/run_loop_private.h</itemPath>
+      <itemPath>src/sdp.h</itemPath>
+      <itemPath>include/btstack/sdp_util.h</itemPath>
+      <itemPath>include/btstack/utils.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="LibraryFiles"
+                   displayName="Library Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="LinkerScript"
+                   displayName="Linker Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="ObjectFiles"
+                   displayName="Object Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>src/btstack_memory.c</itemPath>
+      <itemPath>src/hci.c</itemPath>
+      <itemPath>src/hci_cmds.c</itemPath>
+      <itemPath>src/hci_dump.c</itemPath>
+      <itemPath>src/hci_transport_mchpusb.c</itemPath>
+      <itemPath>src/l2cap.c</itemPath>
+      <itemPath>src/l2cap_signaling.c</itemPath>
+      <itemPath>src/linked_list.c</itemPath>
+      <itemPath>src/memory_pool.c</itemPath>
+      <itemPath>src/rfcomm.c</itemPath>
+      <itemPath>src/run_loop.c</itemPath>
+      <itemPath>src/sdp.c</itemPath>
+      <itemPath>src/sdp_util.c</itemPath>
+      <itemPath>src/utils.c</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="PIC24FJ128DA106" type="3">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <targetDevice>PIC24FJ128DA106</targetDevice>
+        <targetHeader></targetHeader>
+        <platformTool>PICkit3PlatformTool</platformTool>
+        <languageToolchain>C30</languageToolchain>
+        <languageToolchainVersion>3_30b</languageToolchainVersion>
+        <platform>2</platform>
+      </toolsSet>
+      <compileType>
+        <archiverTool>
+        </archiverTool>
+      </compileType>
+      <makeCustomizationType>
+        <makeCustomizationPreStepEnabled>false</makeCustomizationPreStepEnabled>
+        <makeCustomizationPreStep></makeCustomizationPreStep>
+        <makeCustomizationPostStepEnabled>false</makeCustomizationPostStepEnabled>
+        <makeCustomizationPostStep></makeCustomizationPostStep>
+        <makeCustomizationAlternativeFileToLoadEnabled>false</makeCustomizationAlternativeFileToLoadEnabled>
+        <makeCustomizationAlternativeFileToLoad></makeCustomizationAlternativeFileToLoad>
+        <makeCustomizationPutChecksumInUserID>false</makeCustomizationPutChecksumInUserID>
+      </makeCustomizationType>
+      <C30>
+        <property key="optimization-level" value="s"/>
+        <property key="preprocessor-macros" value=""/>
+        <property key="code-model" value="default"/>
+        <property key="const-model" value="const-in-code"/>
+        <property key="enable-procedural-abstraction" value="false"/>
+        <property key="enable-ansi-warnings" value="false"/>
+        <property key="enable-short-double" value="false"/>
+        <property key="extra-include-directories"
+                  value=".;./include;../common;../libusb;../microchip/include"/>
+        <property key="post-instruction-scheduling" value="default"/>
+        <property key="enable-unroll-loops" value="false"/>
+        <property key="enable-symbols" value="true"/>
+        <property key="data-model" value="large-data"/>
+        <property key="isolate-each-function" value="true"/>
+        <property key="enable-fatal-warnings" value="false"/>
+        <property key="enable-omit-frame-pointer" value="false"/>
+        <property key="enable-ansi-std" value="false"/>
+        <property key="enable-all-warnings" value="true"/>
+        <property key="pre-instruction-scheduling" value="default"/>
+        <property key="enable-large-arrays" value="false"/>
+        <property key="scalar-model" value="default"/>
+      </C30>
+      <C30-AS>
+      </C30-AS>
+      <C30-LD>
+      </C30-LD>
+      <C30Global>
+        <property key="fast-math" value="false"/>
+        <property key="legacy-libc" value="false"/>
+        <property key="output-file-format" value="coff"/>
+      </C30Global>
+      <PICkit3PlatformTool>
+      </PICkit3PlatformTool>
+    </conf>
+    <conf name="PIC24FJ128DA206" type="3">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <targetDevice>PIC24FJ128DA206</targetDevice>
+        <targetHeader></targetHeader>
+        <platformTool>PICkit3PlatformTool</platformTool>
+        <languageToolchain>C30</languageToolchain>
+        <languageToolchainVersion>3_30b</languageToolchainVersion>
+        <platform>2</platform>
+      </toolsSet>
+      <compileType>
+        <archiverTool>
+        </archiverTool>
+      </compileType>
+      <makeCustomizationType>
+        <makeCustomizationPreStepEnabled>false</makeCustomizationPreStepEnabled>
+        <makeCustomizationPreStep></makeCustomizationPreStep>
+        <makeCustomizationPostStepEnabled>false</makeCustomizationPostStepEnabled>
+        <makeCustomizationPostStep></makeCustomizationPostStep>
+        <makeCustomizationAlternativeFileToLoadEnabled>false</makeCustomizationAlternativeFileToLoadEnabled>
+        <makeCustomizationAlternativeFileToLoad></makeCustomizationAlternativeFileToLoad>
+        <makeCustomizationPutChecksumInUserID>false</makeCustomizationPutChecksumInUserID>
+      </makeCustomizationType>
+      <C30>
+        <property key="optimization-level" value="s"/>
+        <property key="preprocessor-macros" value=""/>
+        <property key="code-model" value="default"/>
+        <property key="const-model" value="const-in-code"/>
+        <property key="enable-procedural-abstraction" value="false"/>
+        <property key="enable-ansi-warnings" value="false"/>
+        <property key="enable-short-double" value="false"/>
+        <property key="extra-include-directories"
+                  value=".;./include;../common;../libusb;../microchip/include"/>
+        <property key="post-instruction-scheduling" value="default"/>
+        <property key="enable-unroll-loops" value="false"/>
+        <property key="data-model" value="large-data"/>
+        <property key="isolate-each-function" value="true"/>
+        <property key="enable-fatal-warnings" value="false"/>
+        <property key="enable-omit-frame-pointer" value="false"/>
+        <property key="enable-ansi-std" value="false"/>
+        <property key="enable-all-warnings" value="true"/>
+        <property key="pre-instruction-scheduling" value="default"/>
+        <property key="scalar-model" value="default"/>
+      </C30>
+      <C30-AS>
+      </C30-AS>
+      <C30-LD>
+      </C30-LD>
+      <C30Global>
+        <property key="fast-math" value="false"/>
+        <property key="legacy-libc" value="false"/>
+        <property key="output-file-format" value="coff"/>
+      </C30Global>
+      <PICkit3PlatformTool>
+      </PICkit3PlatformTool>
+    </conf>
+    <conf name="PIC24FJ256DA206" type="3">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <targetDevice>PIC24FJ256DA206</targetDevice>
+        <targetHeader></targetHeader>
+        <platformTool>PICkit3PlatformTool</platformTool>
+        <languageToolchain>C30</languageToolchain>
+        <languageToolchainVersion>3_30b</languageToolchainVersion>
+        <platform>2</platform>
+      </toolsSet>
+      <compileType>
+        <archiverTool>
+        </archiverTool>
+      </compileType>
+      <makeCustomizationType>
+        <makeCustomizationPreStepEnabled>false</makeCustomizationPreStepEnabled>
+        <makeCustomizationPreStep></makeCustomizationPreStep>
+        <makeCustomizationPostStepEnabled>false</makeCustomizationPostStepEnabled>
+        <makeCustomizationPostStep></makeCustomizationPostStep>
+        <makeCustomizationAlternativeFileToLoadEnabled>false</makeCustomizationAlternativeFileToLoadEnabled>
+        <makeCustomizationAlternativeFileToLoad></makeCustomizationAlternativeFileToLoad>
+        <makeCustomizationPutChecksumInUserID>false</makeCustomizationPutChecksumInUserID>
+      </makeCustomizationType>
+      <C30>
+        <property key="optimization-level" value="s"/>
+        <property key="preprocessor-macros" value=""/>
+        <property key="code-model" value="default"/>
+        <property key="const-model" value="const-in-code"/>
+        <property key="enable-procedural-abstraction" value="false"/>
+        <property key="enable-ansi-warnings" value="false"/>
+        <property key="enable-short-double" value="false"/>
+        <property key="extra-include-directories"
+                  value=".;./include;../common;../libusb;../microchip/include;../MyFirmware"/>
+        <property key="post-instruction-scheduling" value="default"/>
+        <property key="enable-unroll-loops" value="false"/>
+        <property key="enable-symbols" value="true"/>
+        <property key="data-model" value="large-data"/>
+        <property key="isolate-each-function" value="true"/>
+        <property key="enable-fatal-warnings" value="false"/>
+        <property key="enable-omit-frame-pointer" value="false"/>
+        <property key="enable-ansi-std" value="false"/>
+        <property key="enable-all-warnings" value="true"/>
+        <property key="pre-instruction-scheduling" value="default"/>
+        <property key="enable-large-arrays" value="false"/>
+        <property key="scalar-model" value="default"/>
+      </C30>
+      <C30-AS>
+        <property key="omit-debug-dirs" value="false"/>
+        <property key="extra-include-directories-for-assembler" value=""/>
+        <property key="preprocessor-macros" value=""/>
+        <property key="list-file" value=""/>
+        <property key="list-source" value="false"/>
+        <property key="list-assembly" value="false"/>
+        <property key="relax" value="false"/>
+        <property key="warning-level" value="emit-warnings"/>
+        <property key="extra-include-directories-for-preprocessor" value=""/>
+        <property key="list-section-info" value="false"/>
+        <property key="omit-forms" value="false"/>
+        <property key="list-symbols" value="false"/>
+        <property key="keep-locals" value="false"/>
+        <property key="false-conditionals" value="false"/>
+        <property key="expand-macros" value="false"/>
+        <property key="assembler-symbols" value=""/>
+      </C30-AS>
+      <C30-LD>
+        <property key="preprocessor-macros" value=""/>
+        <property key="general-code-protect" value="no_code_protect"/>
+        <property key="secure-write-protect" value="no_write_protect"/>
+        <property key="warn-section-align" value="false"/>
+        <property key="heap-size" value=""/>
+        <property key="remove-unused-sections" value="false"/>
+        <property key="stack-size" value=""/>
+        <property key="linker-symbols" value=""/>
+        <property key="trace-symbols" value=""/>
+        <property key="map-file" value=""/>
+        <property key="enable-pack-data" value="true"/>
+        <property key="boot-eeprom" value="no_eeprom"/>
+        <property key="general-write-protect" value="no_write_protect"/>
+        <property key="enable-handles" value="true"/>
+        <property key="enable-data-init" value="true"/>
+        <property key="secure-flash" value="no_flash"/>
+        <property key="boot-write-protect" value="no_write_protect"/>
+        <property key="boot-flash" value="no_flash"/>
+        <property key="report-memory-usage" value="false"/>
+        <property key="generate-cross-reference-file" value="false"/>
+        <property key="input-libraries" value=""/>
+        <property key="secure-ram" value="no_ram"/>
+        <property key="enable-check-sections" value="false"/>
+        <property key="enable-default-isr" value="true"/>
+        <property key="symbol-stripping" value=""/>
+        <property key="boot-ram" value="no_ram"/>
+        <property key="secure-eeprom" value="no_eeprom"/>
+        <property key="extra-lib-directories" value=""/>
+      </C30-LD>
+      <C30Global>
+        <property key="fast-math" value="false"/>
+        <property key="legacy-libc" value="false"/>
+        <property key="output-file-format" value="coff"/>
+      </C30Global>
+      <PICkit3PlatformTool>
+      </PICkit3PlatformTool>
+    </conf>
+  </confs>
+</configurationDescriptor>

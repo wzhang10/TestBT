@@ -1,0 +1,2 @@
+
+char *log_buffer;

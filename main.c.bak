@@ -1,0 +1,396 @@
+/* 
+ * File:   main.c
+ * Author: mark
+ *
+ * Created on January 29, 2012, 5:07 PM
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "libconn/connection.h"
+#include "libconn/bt_app.h"
+#include "timer.h"
+#include "HardwareProfile.h"
+#include "uar.h"
+
+typedef enum{
+    BT_SYN = 0x01,
+    BT_ACK = 0x02,
+    BT_REQ_KEY = 0x04,
+    BT_SEND_KEY = 0x08,
+    BT_NO_KEY = 0x10,
+    BT_NO_SUCH_REQ = 0x20,
+    BT_SEND_G = 0x40
+} HEADER_FLAG;
+
+#define HDR_SZ  10
+#define HDR_SIG 0x75
+
+struct Header{
+    //ensure packets delivery
+    char signature;
+    char size;
+    short seq;
+    short ack;
+
+    //higher protocol
+    char action;
+    char unused;
+    short totalSize;
+};
+
+static short currentSeq = 0;
+short getCurrentSeq(){
+    return currentSeq++;
+}
+
+struct LinkedList{
+    char* data;
+    struct LinkedList *next;
+};
+
+// Where the keys are saved
+// later on this one will be a fixed address in ROM, for now I use malloc
+int *keysAddress=0;
+unsigned int keyReadOs=0;
+unsigned int keyWriteOs=0;
+
+#define KEY_STORAGE_SIZE 1024
+
+/*
+typedef enum {
+  STATE_INIT,
+  STATE_WAIT_CONNECTION,
+  STATE_WAIT_CHANNEL_OPEN,
+  STATE_CONNECTED,
+  STATE_ERROR
+} STATE;
+*/
+
+//static STATE state = STATE_INIT;
+static CHANNEL_HANDLE handle;
+char *buffer = 0;
+static const UINT16 bufferSz = 1024;
+int bufferLocation = 0;
+int numOfByteLeft = 0;
+int lenFirstByte=1;
+
+struct LinkedList *sendQ, *waitAckQ, *receivedQ;
+
+
+int checkSignature(const void* data){
+    char c;
+    memcpy(&c, data, 1);
+    return (c ^ HDR_SIG);
+}
+
+void sendHexToUART(char *data, int n){
+    int i=0;
+    while(i<n){
+        unsigned char c1;
+        unsigned char c = data[i++];
+        if(c>0x10){
+            c1 = c>>4 &0x0f;
+            c = c & 0x0f;
+        }else{
+            c1 = 0;
+        }
+        if(c1>9){
+            c1 += 7;
+        }
+        if(c>9){
+            c += 7;
+        }
+        c1+=0x30;
+        c+=0x30;
+        UARTPutChar(c1);
+        UARTPutChar(c);
+        UARTPutChar(0xA0);
+    }
+}
+
+/*
+*
+* The MCU will only transimit data when
+* 1. it gets a request
+* 2. reaches timeout for retransmission
+*
+* Possibile incoming requests/data:
+* 1. Request for a key BT_REQ_KEY
+* 2. The other end is sending me a key BT_SEND_KEY
+* 3. The other end is sending me G
+* 4. Acknowledgment
+*
+* Possible responses are:
+* 1. Send a key BT_SEND_KEY
+* 2. Acknowledge BT_ACK
+* 3. I have no more key BT_NO_KEY
+*
+*/
+
+struct LinkedList* getListFirst(struct LinkedList** l){
+    if((*l)==0)return 0;
+    struct LinkedList *ret = (*l);
+    (*l) = (*l)->next;
+    return ret;
+}
+
+struct LinkedList* detachFromLinkedList(struct LinkedList *item, struct LinkedList **l){
+    if(item==(*l))return getListFirst(l);
+    struct LinkedList *tmp = (*l);
+    while(tmp->next!=item && tmp->next!=0){
+        tmp = tmp->next;
+    }
+    if(!tmp->next)return 0;
+    struct LinkedList* ret = tmp->next;
+    tmp->next = ret->next;
+    return ret;
+}
+
+void linkedListadd(struct LinkedList* item, struct LinkedList **l){
+   if(!(*l))
+       (*l) = item;
+   else{
+       struct LinkedList *tmp = *l;
+       while(tmp->next)
+           tmp=tmp->next;
+       tmp->next=item;
+   }
+}
+
+int linkedListIsEmpty(struct LinkedList* l){
+    return (int)l;
+}
+
+void freeLinkedList(struct LinkedList* l){
+    if(l){
+        if(l->data)
+            free(l->data);
+        free(l);
+    }
+}
+
+char *readKeyData(int n){
+    char *data = 0;
+    if(keyReadOs+n<keyWriteOs){
+        data = malloc(n);
+        memcpy(data, keysAddress+keyReadOs, n);
+        keyReadOs+=n;
+    }else if(keyReadOs>keyWriteOs){
+        if(keyReadOs+n<KEY_STORAGE_SIZE){
+            data = malloc(n);
+            memcpy(data, keysAddress+keyReadOs, n);
+            keyReadOs+=n;
+        }else if(keyReadOs+n-KEY_STORAGE_SIZE<keyWriteOs){
+            data = malloc(n);
+            int sz1 = KEY_STORAGE_SIZE-keyReadOs;
+            memcpy(data, keysAddress+keyReadOs, sz1);
+            memcpy(data+sz1, keysAddress, n-sz1);
+            keyReadOs=n-sz1;
+        }
+    }
+    return data;
+}
+
+int writeKeyData(char *data, int n){
+    if(keyWriteOs>keyReadOs && keyWriteOs+n<KEY_STORAGE_SIZE){
+        memcpy(keysAddress+keyWriteOs, data, n);
+        keyWriteOs+=n;
+        return 0;
+    }else if(keyWriteOs>keyReadOs && keyWriteOs+n>KEY_STORAGE_SIZE){
+        if(KEY_STORAGE_SIZE-keyWriteOs-n<keyReadOs){
+            int sz1=KEY_STORAGE_SIZE-keyWriteOs;
+            memcpy(keysAddress+keyWriteOs, data, sz1);
+            memcpy(keysAddress, data+sz1, n-sz1);
+            keyWriteOs=n-sz1;
+            return 0;
+        }
+    }
+    return -1;
+}
+
+void sendQTask(){
+    struct LinkedList* headOfList = getListFirst(&sendQ);
+    if(!headOfList)return;
+    struct Header *h = (struct Header *)headOfList->data;
+    h->unused = 0xff;
+    if((h->action & BT_SYN))
+        linkedListadd(headOfList, &waitAckQ);
+    UARTSend("send:", 5);
+    sendHexToUART(headOfList->data, h->size+HDR_SZ);
+    UARTPutChar('\n');
+    BTWrite(headOfList->data, h->size+HDR_SZ);
+}
+
+// process the received messages
+void receivedQTask(){
+    UARTSend("\nkeysAddress:", 13);
+    sendHexToUART(keysAddress, 28);
+    UARTPutChar('\n');
+    UARTSend("writeOs:", 8);
+    sendHexToUART(&keyWriteOs, 2);
+    UARTPutChar('\n');
+    UARTSend("readOs:", 7);
+    sendHexToUART(&keyReadOs, 2);
+    UARTPutChar('\n');
+    UARTPutChar('\n');
+
+    struct LinkedList* headOfList = getListFirst(&receivedQ);
+    if(!headOfList)return;
+    struct Header *h = (struct Header *)headOfList->data;
+
+    if(h->action & BT_ACK){
+        // Got an acknowledgment, remove from list if finds match
+        int answered = 0;
+        if(!linkedListIsEmpty(waitAckQ)){
+            struct LinkedList *tmp = waitAckQ;
+            while(tmp){
+                struct Header *ih = (struct Header *)tmp->data;
+                if(h->ack == ih->seq){
+                    // remove tmp
+                    tmp = detachFromLinkedList(tmp, &waitAckQ);
+                    freeLinkedList(tmp);
+                    answered = 1;
+                    break;
+                }
+                tmp = tmp->next;
+            }
+        }
+        if(!answered){
+            struct LinkedList *noReqAck = malloc(sizeof(struct LinkedList));
+            
+            struct Header *hdrData = malloc(HDR_SZ);
+            hdrData->signature = HDR_SIG;
+            hdrData->size = 0;
+            hdrData->seq = getCurrentSeq();
+            hdrData->ack = h->seq;
+            hdrData->action = BT_NO_SUCH_REQ|BT_ACK;
+            hdrData->totalSize = 0;
+
+            noReqAck->next = 0;
+            noReqAck->data = (char *)hdrData;
+            linkedListadd(noReqAck, &sendQ);
+
+            UARTSend("NAhdrData:", 10);
+            sendHexToUART(hdrData, HDR_SZ);
+            UARTPutChar('\n');
+        }
+    }
+
+    if(h->action & BT_SEND_KEY){
+        // Got some sweet keys, need to acknowledge this guys
+        // now let's save the keys first
+        if(writeKeyData((char *)(headOfList->data+HDR_SZ), h->size)){
+            //TODO: NO MORE ROOM IN MEMORY TO SAVE
+        }
+
+        struct Header *hdrData = malloc(HDR_SZ);
+        hdrData->signature = HDR_SIG;
+        hdrData->size = 0;
+        hdrData->seq = getCurrentSeq();
+        hdrData->ack = h->seq;
+        hdrData->action = BT_ACK;
+        hdrData->totalSize = 0;
+
+        struct LinkedList *sendItem = malloc(sizeof(struct LinkedList));
+        sendItem->next = 0;
+        sendItem->data = (char *)hdrData;
+        linkedListadd(sendItem, &sendQ);
+
+        UARTSend("bskHdrData:", 11);
+        sendHexToUART(hdrData, HDR_SZ);
+        UARTPutChar('\n');
+
+    }else if(h->action & BT_REQ_KEY){
+        // Someone wants our sweet keys, we'll give them one
+        // first we need to look at how many bytes they want
+        unsigned int keySz = (long)(*(headOfList->data+HDR_SZ)) & 0xffff;
+
+        char *data = malloc(keySz+HDR_SZ);
+
+        struct Header *hdrData = (struct Header *)data;
+        hdrData->signature = HDR_SIG;
+        hdrData->size = keySz;
+        hdrData->seq = getCurrentSeq();
+        hdrData->ack = h->seq;
+        hdrData->action = BT_SEND_KEY | BT_ACK;
+        hdrData->totalSize = keySz;
+
+        char *key = readKeyData(keySz);
+        if(!key){
+            hdrData->action = BT_NO_KEY | BT_ACK;
+            hdrData->size = 0;
+            hdrData->totalSize = 0;
+        }else{
+            memcpy(data+HDR_SZ, key, keySz);
+            free(key);
+        }
+
+        struct LinkedList *sendItem = malloc(sizeof(struct LinkedList));
+        sendItem->next = 0;
+        sendItem->data = data;
+        linkedListadd(sendItem, &sendQ);
+
+        UARTSend("bt_req_key:", 11);
+        sendHexToUART(hdrData, HDR_SZ+keySz);
+        UARTPutChar('\n');
+
+    }
+}
+
+// equivalent to receiveThread
+void btCallback(CHANNEL_HANDLE h, const void* data, UINT32 data_len) {
+  if (data) {
+      mLED_0_Toggle();
+      //UARTSend(data, data_len);
+      if(checkSignature(data)){
+          return;
+      }
+      struct LinkedList *incoming = malloc(sizeof(struct LinkedList));
+      incoming->data = malloc(data_len);
+      memcpy(incoming->data, data, data_len);
+      incoming->next = 0;
+      linkedListadd(incoming, &receivedQ);
+      UARTSend("recv:", 5);
+      sendHexToUART(incoming->data, 20);
+      UARTPutChar('\n');
+  } else {
+      // connection closed, soft reset and re-establish
+      //if (state == STATE_CONNECTED) {
+      //} else {
+      //Channel failed to open
+      //}
+      //state = STATE_WAIT_CHANNEL_OPEN;
+      handle = ConnectionOpenChannelBtServer(&btCallback);
+  }
+}
+
+int main() {
+
+    mInitAllLEDs();
+
+    UARTInit(9600);
+    UARTSend("starting...\n", 12);
+    buffer = (char*)malloc(bufferSz);
+        
+    ConneectionInit();           //Set states to disconnect
+    lenFirstByte = 1;
+    sendQ = 0;
+    waitAckQ = 0;
+    receivedQ = 0;
+    keysAddress = malloc(KEY_STORAGE_SIZE);
+    //memset(keysAddress, 0, KEY_STORAGE_SIZE);
+    while(1){
+        ConnectionTasks();      //does USB Host tasks and BT tasks
+        receivedQTask();
+        sendQTask();
+        BOOL can_open_channel = ConnectionCanOpenChannel(CHANNEL_TYPE_BT);
+        if(can_open_channel){
+            handle = ConnectionOpenChannelBtServer(&btCallback);
+        }
+    }
+
+    return (0);
+}
+

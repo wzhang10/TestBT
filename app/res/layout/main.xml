@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <Button
+        android:id="@+id/bRequestKey"
+        android:layout_width="match_parent"
+        android:layout_height="108dp"
+        android:text="@string/RequestKey" />
+
+    <Button
+        android:id="@+id/bSendKeys"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:text="@string/SendKeys" />
+
+    <Button
+        android:id="@+id/bTurnOnBluetooth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/TurnOnBluetooth" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="Medium Text"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+</LinearLayout>
