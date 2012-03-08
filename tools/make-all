@@ -1,9 +1,0 @@
-PROJECTS="libusb libconn libbtstack libadb bootloader"
-
-for PROJ in $PROJECTS; do
-  echo ===========================================
-  echo $PROJ
-  echo ===========================================
-  make -C firmware/$PROJ $*
-done
-
